@@ -1,7 +1,7 @@
 """Evaluate the untouched pretrained 19-class baseline on the research test split."""
 from __future__ import annotations
 
-import argparse, json, sys
+import argparse, json, sys, time
 from pathlib import Path
 
 import numpy as np
@@ -23,7 +23,7 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--limit", type=int, help="Smoke-test only: cap the test records; never report this as the full split.")
     parser.add_argument("--batch-size", type=int, default=16)
-    args = parser.parse_args()
+    args = parser.parse_args(); started = time.perf_counter()
     records = [r for r in build_records(args.root, args.mapping) if r.split == "test" and r.target_labels]
     full_count = len(records)
     if args.limit is not None: records = records[:args.limit]
@@ -52,7 +52,7 @@ def main() -> None:
     metrics = multilabel_metrics(np.stack(scores), np.stack(targets))
     metrics["labels"] = list(NEW_LABELS)
     metrics["dataset_summary"] = split_summary(build_records(args.root, args.mapping))
-    metrics["evaluation"] = {"split": "test", "eligible_test_records": full_count, "attempted": len(records), "evaluated": len(scores), "skipped": skipped, "batch_size": args.batch_size, "smoke_test_limit": args.limit, "complete_test_split": args.limit is None and len(records) == full_count}
+    metrics["evaluation"] = {"split": "test", "eligible_test_records": full_count, "attempted": len(records), "evaluated": len(scores), "skipped": skipped, "batch_size": args.batch_size, "elapsed_seconds": time.perf_counter() - started, "smoke_test_limit": args.limit, "complete_test_split": args.limit is None and len(records) == full_count}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     print(json.dumps({key: metrics[key] for key in ("macro_f1", "micro_f1", "macro_average_precision", "evaluation")}, indent=2))
