@@ -1,0 +1,43 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Datasets and model checkpoints
+data/
+models/
+*.safetensors
+*.pt
+*.pth
+*.ckpt
+*.onnx
+
+# Generated files
+uploads/
+outputs/
+results/
+*.log
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tar.zst
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Separate upstream repository
+/reben-training-scripts/
