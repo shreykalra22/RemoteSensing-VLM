@@ -13,9 +13,11 @@ The table's *Unlabeled* source classes remain explicit unmapped annotations.
 
 There is no official ben-ge-800 benchmark split in the local archive. The
 manifest therefore uses a research-only deterministic 70/15/15 split, seed
-`20261013`, by SHA-256 of `scene_source`. All patches from the same S1 scene
-are assigned together. It does not prove spatial independence across different
-scenes and must not be called an official split.
+`20261013`, by SHA-256 of connected acquisition-scene components. A component
+connects records sharing an S1 `scene_source` **or** the same S2 scene after
+removing its trailing patch row/column. This avoids the previously possible
+cross-split S2-scene leakage. It does not prove spatial independence across
+different scenes and must not be called an official split.
 
 Build the ignored local manifest:
 
