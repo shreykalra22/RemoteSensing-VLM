@@ -50,9 +50,10 @@ def main() -> None:
     flush()
     if not scores: raise RuntimeError("No records were successfully evaluated.")
     metrics = multilabel_metrics(np.stack(scores), np.stack(targets))
+    metrics["predicted_positive_rate"] = (np.stack(scores) >= 0.50).mean(axis=0).tolist()
     metrics["labels"] = list(NEW_LABELS)
     metrics["dataset_summary"] = split_summary(build_records(args.root, args.mapping))
-    metrics["evaluation"] = {"split": "test", "eligible_test_records": full_count, "attempted": len(records), "evaluated": len(scores), "skipped": skipped, "batch_size": args.batch_size, "elapsed_seconds": time.perf_counter() - started, "smoke_test_limit": args.limit, "complete_test_split": args.limit is None and len(records) == full_count}
+    metrics["evaluation"] = {"split": "test", "eligible_test_records": full_count, "attempted": len(records), "evaluated": len(scores), "skipped": skipped, "batch_size": args.batch_size, "parameter_count": sum(parameter.numel() for parameter in model.parameters()), "elapsed_seconds": time.perf_counter() - started, "smoke_test_limit": args.limit, "complete_test_split": args.limit is None and len(records) == full_count}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     print(json.dumps({key: metrics[key] for key in ("macro_f1", "micro_f1", "macro_average_precision", "evaluation")}, indent=2))

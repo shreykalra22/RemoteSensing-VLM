@@ -22,6 +22,8 @@ def main():
     with torch.no_grad():
         for batch in DataLoader(dataset, batch_size=args.batch_size, shuffle=False):
             scores.append(torch.sigmoid(model(batch["s1"].to(device), batch["s2"].to(device))).cpu().numpy()); targets.append(batch["target"].numpy())
-    metrics = multilabel_metrics(np.concatenate(scores), np.concatenate(targets)); metrics.update({"labels": list(NEW_LABELS), "dataset_summary": summary, "evaluation": {"split": "test", "evaluated": len(dataset), "batch_size": args.batch_size, "checkpoint": str(args.checkpoint), "elapsed_seconds": time.perf_counter() - started, "device": str(device)}})
+    scores_array, targets_array = np.concatenate(scores), np.concatenate(targets)
+    metrics = multilabel_metrics(scores_array, targets_array); metrics["predicted_positive_rate"] = (scores_array >= 0.50).mean(axis=0).tolist()
+    metrics.update({"labels": list(NEW_LABELS), "dataset_summary": summary, "evaluation": {"split": "test", "evaluated": len(dataset), "batch_size": args.batch_size, "checkpoint": str(args.checkpoint), "selection_metric": saved.get("selection_metric"), "parameter_count": sum(parameter.numel() for parameter in model.parameters()), "elapsed_seconds": time.perf_counter() - started, "device": str(device)}})
     args.output.parent.mkdir(parents=True, exist_ok=True); args.output.write_text(json.dumps(metrics, indent=2), encoding="utf-8"); print(json.dumps({k: metrics[k] for k in ("macro_f1", "micro_f1", "macro_average_precision", "micro_average_precision", "evaluation")}, indent=2))
 if __name__ == "__main__": main()
