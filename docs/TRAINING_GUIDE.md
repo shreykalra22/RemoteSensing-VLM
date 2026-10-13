@@ -17,3 +17,11 @@ One-batch wiring test only (not a training result):
 .\.venv\Scripts\python.exe scripts\train_fusion.py --root data\raw\ben-ge-800 --output results\fusion-smoke.pt --epochs 1 --batch-size 2 --max-train-batches 1 --max-validation-batches 1
 ```
 
+### Warm starts are not full resumes
+
+`--warm-start` validates and loads a compatible model checkpoint but deliberately
+creates a fresh optimizer and seeded data-order generator. It is therefore a
+separate experiment, not a bit-for-bit continuation. The source checkpoint is
+never overwritten; use a new output name and evaluate the warm-start state on
+validation before selecting later epochs.
+
