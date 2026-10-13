@@ -52,7 +52,7 @@ def _evaluation_summary(filename: str, name: str, state: str) -> dict:
 @app.get("/api/evaluations")
 def evaluations() -> dict:
     """Expose persisted evaluations only; this endpoint never invents metrics."""
-    return {"baseline": _evaluation_summary("baseline-test.json", "Pretrained BigEarthNet-v2 ResNet-50", "evaluated"), "fusion": _evaluation_summary("fusion-controlled-test.json", "S1/S2 fusion Transformer", "evaluated"), "text_modality": {"state": "unavailable", "reason": "No legitimate leakage-free text source has been configured."}}
+    return {"baseline": _evaluation_summary("baseline-phase3-test.json", "Pretrained BigEarthNet-v2 ResNet-50", "evaluated"), "fusion": _evaluation_summary("fusion-phase3-final-test.json", "S1/S2 fusion Transformer (bounded 3-epoch experiment)", "trained_limited"), "text_modality": {"state": "unavailable", "reason": "No legitimate leakage-free text source has been configured."}}
 
 
 def _default_directories() -> tuple[Path, Path]:
