@@ -1,5 +1,6 @@
 """HTTP boundary for the RemoteSensing-VLM baseline application."""
 
+import json
 import logging
 import tempfile
 import zipfile
@@ -35,6 +36,23 @@ def root() -> dict:
 @app.get("/health")
 def health() -> dict:
     return {"status": "healthy", "model": "BigEarthNet-v2 ResNet-50", "device": str(DEVICE), "pipeline": "baseline"}
+
+
+def _evaluation_summary(filename: str, name: str, state: str) -> dict:
+    path = BASE_DIR / "results" / filename
+    if not path.is_file():
+        return {"name": name, "state": "unavailable", "reason": f"No stored result file: results/{filename}"}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        return {"name": name, "state": state, "metrics": {key: payload.get(key) for key in ("macro_f1", "micro_f1", "macro_average_precision", "micro_average_precision")}, "support": payload.get("support"), "labels": payload.get("labels"), "evaluation": payload.get("evaluation"), "dataset_summary": payload.get("dataset_summary")}
+    except (OSError, json.JSONDecodeError) as exc:
+        return {"name": name, "state": "unavailable", "reason": f"Stored evaluation cannot be read: {exc}"}
+
+
+@app.get("/api/evaluations")
+def evaluations() -> dict:
+    """Expose persisted evaluations only; this endpoint never invents metrics."""
+    return {"baseline": _evaluation_summary("baseline-test.json", "Pretrained BigEarthNet-v2 ResNet-50", "evaluated"), "fusion": _evaluation_summary("fusion-controlled-test.json", "S1/S2 fusion Transformer", "evaluated"), "text_modality": {"state": "unavailable", "reason": "No legitimate leakage-free text source has been configured."}}
 
 
 def _default_directories() -> tuple[Path, Path]:
